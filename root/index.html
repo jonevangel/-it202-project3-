@@ -216,10 +216,17 @@ function updateGameArea() {
 	myScore.update();
     for (i = 0; i < myObstacles.length; i += 1) {
         myObstacles[i].x += -1;
+		if(myObstacles[i].x == 0){
+			myObstacles[i].x = x;
+		}
         myObstacles[i].update();
+		
     }
 	for (i = 0; i < myPlus.length; i += 1) {
         myPlus[i].x += -1;
+		if(myPlus[i].x == 0){
+			myPlus[i].x = x;
+		}
         myPlus[i].update();
     }
 
