@@ -1,0 +1,239 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+<style>
+canvas {
+    border:1px solid #d3d3d3;
+    background-color: #f1f1f1;
+}
+</style>
+</head>
+<body onload="startGame()">
+<script>
+	
+window.addEventListener('keydown',this.check,false);
+
+var menu;
+var back;
+var myGamePiece;
+var myObstacles = [];
+var myPlus = [];
+var myScore;
+var score;
+var life;
+var go;
+
+function check(e) {
+    var code = e.keyCode;
+    //Up arrow pressed
+    switch (code) {
+        case 37: myGamePiece.x -= window.innerWidth/50; break;
+        case 38: myGamePiece.y -= window.innerHeight/50; break;
+        case 39: myGamePiece.x += window.innerWidth/50; break;
+        case 40: myGamePiece.y += window.innerHeight/50; break;
+        default: //myGameArea.start();//startGame();
+    }
+}
+	
+function startMenu(){
+	menu = new component("30px", "Consolas", "white", innerWidth/2 - innerWidth/10, window.innerHeight/2, "text");
+	back = new component(window.innerWidth-10, window.innerHeight-25, "https://milkyway.ocremix.org/images/body.jpg", 0, 0, "img");
+	menu.text = "Use arrow keys to move./nPress any button to continue.";
+	menu.update();
+	back.update();
+}
+	
+function star(){
+
+}
+	
+function startGame() {
+	life = 3;
+	score = 0;
+	menu = new component("30px", "Consolas", "white", 10, 70, "text");
+	menu.text = "Use arrow keys to move./nPress any button to continue.";
+	back = new component(window.innerWidth-10, window.innerHeight-25, "https://milkyway.ocremix.org/images/body.jpg", 0, 0, "img");
+    myGamePiece = new component(window.innerWidth/10, window.innerHeight/10, "https://vignette.wikia.nocookie.net/kirby/images/3/31/Red.png/revision/latest/scale-to-width-down/185?cb=20191001143044&path-prefix=en", 10, 120, "img");
+    myScore = new component("30px", "Consolas", "yellow", 10, 40, "text");
+    myGameArea.start();
+}
+
+var myGameArea = {
+    canvas : document.createElement("canvas"),
+    start : function() {
+        this.canvas.width = window.innerWidth - 10;
+        this.canvas.height = window.innerHeight - 25;
+        this.context = this.canvas.getContext("2d");
+        document.body.insertBefore(this.canvas, document.body.childNodes[0]);
+        this.frameNo = 0;
+        this.interval = setInterval(updateGameArea, 20);
+		addEvent(document, "keypress", function (e) {
+});
+        },
+    clear : function() {
+        this.context.clearRect(0, 0, this.canvas.width, this.canvas.height);
+    }
+}
+
+
+
+function addEvent(element, eventName, callback) {
+    if (element.addEventListener) {
+        element.addEventListener(eventName, callback, false);
+    } else if (element.attachEvent) {
+        element.attachEvent("on" + eventName, callback);
+    } else {
+        element["on" + eventName] = callback;
+    }
+}
+
+function component(width, height, color, x, y, type) {
+    this.type = type;
+	if (type == "img") {
+        this.image = new Image();
+        this.image.src = color;
+    }
+    this.score = 0;
+    this.width = width;
+    this.height = height;
+    this.speedX = 0;
+    this.speedY = 0;    
+    this.x = x;
+    this.y = y;
+    this.gravity = 0;
+    this.gravitySpeed = 0;
+    this.update = function() {
+        ctx = myGameArea.context;
+        if (this.type == "text") {
+            ctx.font = this.width + " " + this.height;
+            ctx.fillStyle = color;
+            ctx.fillText(this.text, this.x, this.y);
+        } 
+		else if (type == "img") {
+			ctx.drawImage(this.image, this.x, this.y, this.width, this.height);
+			
+		}
+		
+		else {
+            ctx.fillStyle = color;
+            ctx.fillRect(this.x, this.y, this.width, this.height);
+        }
+    }
+    this.newPos = function() {
+        this.gravitySpeed += this.gravity;
+        this.x += this.speedX;
+        this.y += this.speedY + this.gravitySpeed;
+        this.hitBottom();
+    }
+    this.hitBottom = function() {
+        var rockbottom = myGameArea.canvas.height - this.height;
+        if (this.y > rockbottom) {
+            this.y = rockbottom;
+            this.gravitySpeed = 0;
+        }
+    }
+    this.crashWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var crash = true;
+		
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            	crash = false;
+        }
+		if(crash == true){
+			if(life == 0){
+				crash = true;
+			}
+			else{
+				otherobj.width = 0;
+				otherobj.height = 0;
+				otherobj.x = -1;
+				otherobj.y = -1;
+				life= life-1
+				crash = false;
+			};
+		}
+        return crash;
+    }
+	this.colWith = function(otherobj) {
+        var myleft = this.x;
+        var myright = this.x + (this.width);
+        var mytop = this.y;
+        var mybottom = this.y + (this.height);
+        var otherleft = otherobj.x;
+        var otherright = otherobj.x + (otherobj.width);
+        var othertop = otherobj.y;
+        var otherbottom = otherobj.y + (otherobj.height);
+        var point = true;
+		
+        if ((mybottom < othertop) || (mytop > otherbottom) || (myright < otherleft) || (myleft > otherright)) {
+            	point = false;
+        }
+		if(point == true){
+			otherobj.width = 0;
+			otherobj.height = 0;
+			otherobj.x = -1;
+			otherobj.y = -1;
+			score +=1;
+		}
+        return point;
+    }
+}
+
+function updateGameArea() {
+    var x, height, gap, minHeight, maxHeight, minGap, maxGap;
+    for (i = 0; i < myObstacles.length; i += 1) {
+        if (myGamePiece.crashWith(myObstacles[i])) {
+			go = new component("30px", "Consolas", "red", innerWidth/2 - innerWidth/10, innerHeight/2, "text");
+			go.text = "GAME OVER";
+			go.update();
+            return;
+        }
+    }
+	 for (i = 0; i < myPlus.length; i += 1) {
+		if(myGamePiece.colWith(myPlus[i])){
+		}
+	 }
+    myGameArea.clear();
+    myGameArea.frameNo += 1;
+    if (myGameArea.frameNo == 1 || everyinterval(150-(score))) {
+        x = myGameArea.canvas.width;
+        height = Math.floor(Math.random()*innerHeight/20)+innerHeight/20;
+        myObstacles.push(new component(height, height, "https://vignette.wikia.nocookie.net/kirby/images/2/2e/KCC_Gordo_2.png/revision/latest/top-crop/width/220/height/220?cb=20130507012728&path-prefix=en", x, Math.floor(Math.random()*innerHeight), "img"));
+		myPlus.push(new component(height, height, "https://vignette.wikia.nocookie.net/kirby/images/2/27/KNiDL_Invincable_Candy_artwork_transparent.png/revision/latest/scale-to-width-down/181?cb=20180301215846&path-prefix=en", x, Math.floor(Math.random()*innerHeight), "img"));
+	}
+	back.update();
+	myScore.text= "LIVES:" + life + " SCORE:" + score + " LEVEL:" + Math.floor(1+(score/10));
+	menu.text = "Use arrow keys to move.\nPress any button to continue.";
+	menu.update();
+	myScore.update();
+    for (i = 0; i < myObstacles.length; i += 1) {
+        myObstacles[i].x += -1;
+        myObstacles[i].update();
+    }
+	for (i = 0; i < myPlus.length; i += 1) {
+        myPlus[i].x += -1;
+        myPlus[i].update();
+    }
+
+    
+    myGamePiece.newPos();
+    myGamePiece.update();
+}
+
+function everyinterval(n) {
+    if ((myGameArea.frameNo / n) % 1 == 0) {return true;}
+    return false;
+}
+
+</script>
+<br>
+</body>
+</html>
